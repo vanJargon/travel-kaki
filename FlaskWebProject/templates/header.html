@@ -34,15 +34,32 @@
                     </div>
                     <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="/dashboard">Home</a></li>
-                        <li><a href="#">My Trips</a></li>
-                        <li><a href="#">Write</a></li>
+                        {% if session.logged_in %}
+                            <li><a href="/dashboard">Home</a></li>
+                            <li><a href="#">Add My Trip</a></li>
+                            <li><a href="/logout">Logout</a></li>
+                        {% else %}
+                            <li><a href="#">Help</a></li>
+                            <li><a href="/register">Sign Up</a></li>
+                            <li><a href="/login">Log In</a></li>
+                        {% endif %}
                     </ul>
                     </div>
                 </div>
             </nav>
         
-        <div class="container fluid_body" style="min-height:100%">    
+        <div class="container fluid_body" style="min-height:100%">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class = "alert alert-warning alert-dismissible" role="alert">
+                            <button type = "button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
             {% block body %}{% endblock %}
 
         <hr>

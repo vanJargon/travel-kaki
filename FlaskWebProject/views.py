@@ -3,6 +3,7 @@ Routes and views for the flask application.
 """
 from flask import render_template, request, url_for, redirect, flash, session
 from dbconnect import connection
+from functools import wraps
 from wtforms import Form, BooleanField, TextField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
@@ -13,12 +14,31 @@ from FlaskWebProject import app
 def main():
     return render_template('index.html')
 
+def login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            return redirect(url_for('login'))
+
+    return wrap
+
 @app.route('/dashboard')
+@login_required
 def dashboard():
     return render_template('dashboard.html')
 
+@app.route('/logout')
+@login_required
+def logout():
+    session.clear()
+    gc.collect()
+    flash("You have been logged out")
+    return redirect(url_for('main'))
+
 @app.route('/login', methods=['GET','POST'])
-def login_page():
+def login():
     error = ''
     try:
         c, conn = connection()
@@ -32,7 +52,7 @@ def login_page():
                 session['logged_in'] = True
                 session['username'] = request.form['username']
 
-                #flash("You are now logged in")
+                flash("You are now logged in")
                 return redirect(url_for("dashboard"))
 
             else:
@@ -72,7 +92,7 @@ def register():
                           (thwart(username),))
 
             if int(x) > 0:
-                #flash("That username is already taken, please choose another")
+                flash("The username is already taken, please choose another username")
                 return render_template('register.html', form=form)
 
             else:
@@ -80,7 +100,7 @@ def register():
                           (thwart(username), thwart(password), thwart(email)))
                 
                 conn.commit()
-                #flash("Thanks for registering!")
+                flash("Thank you for registering!")
                 c.close()
                 conn.close()
                 gc.collect()
