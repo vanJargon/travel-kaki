@@ -9,4 +9,9 @@ $(document).ready(function(){
     }
 
     google.maps.event.addDomListener(window,'load',initialize);
+
+    $('#header_submit').on("click", function(){
+        var query = $('#header_input').val();
+
+    });
 });
